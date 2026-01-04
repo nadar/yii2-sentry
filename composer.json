@@ -18,6 +18,12 @@
         "phpunit/phpunit": "^11.0",
         "yiisoft/yii2": "^2.0"
     },
+    "confgi": {
+        "allow-plugins": {
+          "yiisoft/yii2-composer": true,
+          "php-http/discovery": true
+        }
+    },
     "autoload": {
         "psr-4": {
             "Nadar\\Sentry\\": "src/"
