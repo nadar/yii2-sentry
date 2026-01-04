@@ -89,7 +89,7 @@ class SentryTarget extends Target
 
         // Add log vars (request data, environment, etc.)
         if (!empty($this->logVars)) {
-            $extra['log_vars'] = $this->getContextMessage();
+            $extra['log_vars'] = $this->getContextData();
         }
 
         // Add stack traces if available
@@ -166,11 +166,11 @@ class SentryTarget extends Target
 
     /**
      * Generates the context information to be logged.
-     * Overrides parent method to return the data instead of formatting it as string.
+     * Returns the data as an array for Sentry.
      * 
      * @return array the context information
      */
-    protected function getContextMessage(): array
+    protected function getContextData(): array
     {
         $context = [];
         $allowedVars = ['_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_SERVER'];

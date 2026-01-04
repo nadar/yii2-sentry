@@ -147,7 +147,7 @@ class SentryTargetTest extends TestCase
         $target->init();
         
         $class = new ReflectionClass(SentryTarget::class);
-        $method = $class->getMethod('getContextMessage');
+        $method = $class->getMethod('getContextData');
         $method->setAccessible(true);
         
         $result = $method->invoke($target);
@@ -166,7 +166,7 @@ class SentryTargetTest extends TestCase
         $_POST['data'] = 'info';
         
         $class = new ReflectionClass(SentryTarget::class);
-        $method = $class->getMethod('getContextMessage');
+        $method = $class->getMethod('getContextData');
         $method->setAccessible(true);
         
         $result = $method->invoke($target);
