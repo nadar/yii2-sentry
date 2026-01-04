@@ -70,15 +70,18 @@ class SentryTarget extends Target
         $severity = $this->getSeverity($level);
 
         // Prepare context data
-        $extra = [
-            'category' => $category,
-            'timestamp' => $timestamp,
-            'log_level' => Logger::getLevelName($level),
-        ];
+        $extra = [];
 
-        // Add log vars (request data, environment, etc.)
-        if (!empty($this->logVars)) {
-            $extra['log_vars'] = $this->getContextData();
+        if (is_array($text)) {
+            // if array has message or msg key extract that and put the rest in extra (but with
+            // the array kes from $text )
+            if (isset($text['message'])) {
+                $extra = array_merge($extra, $text);
+                $text = $text['message'];
+            } elseif (isset($text['msg'])) {
+                $extra = array_merge($extra, $text);
+                $text = $text['msg'];
+            }
         }
 
         // Add stack traces if available
@@ -86,8 +89,15 @@ class SentryTarget extends Target
             $extra['traces'] = $traces;
         }
 
+        $context = [
+            'log_level' => Logger::getLevelName($level),
+            'category' => $category,
+            'globals' => parent::getContextMessage(),
+            'timestamp' => $timestamp,
+        ];
+
         // Send to Sentry
-        $this->sendToSentry($text, $severity, $extra, $category);
+        $this->sendToSentry($text, $severity, $extra, $category, $context);
     }
 
     /**
@@ -98,12 +108,13 @@ class SentryTarget extends Target
      * @param array $extra Extra context data
      * @param string $category Log category
      */
-    protected function sendToSentry(mixed $text, Severity $severity, array $extra, string $category): void
+    protected function sendToSentry(mixed $text, Severity $severity, array $extra, string $category, array $context): void
     {
-        \Sentry\withScope(function (Scope $scope) use ($text, $severity, $extra, $category) {
-            $scope->setContext('extra', $extra);
+        \Sentry\withScope(function (Scope $scope) use ($text, $severity, $extra, $category, $context) {
+            $scope->setContext('Yii-Log', $context);
             $scope->setTag('category', $category);
             $scope->setLevel($severity);
+            $scope->setExtras($extra);
 
             if ($text instanceof \Throwable) {
                 \Sentry\captureException($text);
@@ -141,51 +152,6 @@ class SentryTarget extends Target
             default:
                 return Severity::info();
         }
-    }
-
-    /**
-     * Generates the context information to be logged.
-     * Returns the data as an array for Sentry.
-     * 
-     * @return array the context information
-     */
-    protected function getContextData(): array
-    {
-        $context = [];
-        $allowedVars = ['_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_SERVER'];
-        
-        foreach ((array) $this->logVars as $var) {
-            // Only allow safe global variables
-            if (!in_array($var, $allowedVars, true)) {
-                continue;
-            }
-
-            // Use Yii's request object for request-related data when available
-            if (\Yii::$app->has('request') && in_array($var, ['_GET', '_POST', '_FILES', '_COOKIE'], true)) {
-                $request = \Yii::$app->request;
-                switch ($var) {
-                    case '_GET':
-                        $context[$var] = $request->get();
-                        break;
-                    case '_POST':
-                        $context[$var] = $request->post();
-                        break;
-                    case '_COOKIE':
-                        $context[$var] = $request->cookies->toArray();
-                        break;
-                    case '_FILES':
-                        if (isset($GLOBALS[$var]) && !empty($GLOBALS[$var])) {
-                            // Files need to be accessed from $_FILES directly
-                            $context[$var] = $GLOBALS[$var];
-                        }
-                        break;
-                }
-            } elseif (isset($GLOBALS[$var]) && !empty($GLOBALS[$var])) {
-                $context[$var] = $GLOBALS[$var];
-            }
-        }
-
-        return $context;
     }
 
     /**

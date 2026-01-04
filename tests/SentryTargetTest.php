@@ -140,41 +140,6 @@ class SentryTargetTest extends TestCase
         $this->assertEquals(Severity::info(), $method->invoke($target, 999)); // Unknown level
     }
 
-    public function testGetContextMessageReturnsEmptyArrayWhenNoLogVars(): void
-    {
-        $target = new SentryTarget();
-        $target->logVars = []; // Set to empty array
-        $target->init();
-        
-        $class = new ReflectionClass(SentryTarget::class);
-        $method = $class->getMethod('getContextData');
-        $method->setAccessible(true);
-        
-        $result = $method->invoke($target);
-        
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
-    }
-
-    public function testGetContextMessageFiltersAllowedVars(): void
-    {
-        $target = new SentryTarget();
-        $target->logVars = ['_GET', '_POST', '_INVALID_VAR'];
-        $target->init();
-        
-        $_GET['test'] = 'value';
-        $_POST['data'] = 'info';
-        
-        $class = new ReflectionClass(SentryTarget::class);
-        $method = $class->getMethod('getContextData');
-        $method->setAccessible(true);
-        
-        $result = $method->invoke($target);
-        
-        $this->assertIsArray($result);
-        // Should not include _INVALID_VAR
-        $this->assertArrayNotHasKey('_INVALID_VAR', $result);
-    }
 
     public function testCollectAddsMessagesToTarget(): void
     {
