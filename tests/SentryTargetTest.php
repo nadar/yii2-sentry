@@ -19,6 +19,8 @@ use yii\log\Logger;
 
 class SentryTargetTest extends TestCase
 {
+    private const TEST_DSN = self::TEST_DSN;
+    
     /** @var array test messages */
     protected array $messages = [
         ['test', Logger::LEVEL_INFO, 'test', 1481513561.197593, []],
@@ -52,7 +54,7 @@ class SentryTargetTest extends TestCase
             'components' => [
                 'sentry' => [
                     'class' => Sentry::class,
-                    'dsn' => 'https://examplePublicKey@o0.ingest.sentry.io/0',
+                    'dsn' => self::TEST_DSN,
                 ],
             ],
         ]);

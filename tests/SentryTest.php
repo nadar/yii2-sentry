@@ -9,6 +9,8 @@ use yii\base\InvalidConfigException;
 
 class SentryTest extends TestCase
 {
+    private const TEST_DSN = self::TEST_DSN;
+    
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -36,7 +38,7 @@ class SentryTest extends TestCase
     public function testInitSucceedsWithValidDsn(): void
     {
         $sentry = new Sentry();
-        $sentry->dsn = 'https://examplePublicKey@o0.ingest.sentry.io/0';
+        $sentry->dsn = self::TEST_DSN;
         
         $this->assertNull($sentry->init());
     }
@@ -44,7 +46,7 @@ class SentryTest extends TestCase
     public function testDefaultPropertyValues(): void
     {
         $sentry = new Sentry();
-        $sentry->dsn = 'https://examplePublicKey@o0.ingest.sentry.io/0';
+        $sentry->dsn = self::TEST_DSN;
         
         $this->assertNull($sentry->environment);
         $this->assertNull($sentry->release);
@@ -60,7 +62,7 @@ class SentryTest extends TestCase
     public function testCustomPropertyValues(): void
     {
         $sentry = new Sentry();
-        $sentry->dsn = 'https://examplePublicKey@o0.ingest.sentry.io/0';
+        $sentry->dsn = self::TEST_DSN;
         $sentry->environment = 'production';
         $sentry->release = '1.0.0';
         $sentry->sampleRate = 0.5;
@@ -79,7 +81,7 @@ class SentryTest extends TestCase
     public function testGetHubReturnsHubInstance(): void
     {
         $sentry = new Sentry();
-        $sentry->dsn = 'https://examplePublicKey@o0.ingest.sentry.io/0';
+        $sentry->dsn = self::TEST_DSN;
         $sentry->init();
         
         $hub = $sentry->getHub();
@@ -89,7 +91,7 @@ class SentryTest extends TestCase
     public function testCaptureExceptionReturnsEventId(): void
     {
         $sentry = new Sentry();
-        $sentry->dsn = 'https://examplePublicKey@o0.ingest.sentry.io/0';
+        $sentry->dsn = self::TEST_DSN;
         $sentry->init();
         
         $exception = new \Exception('Test exception');
@@ -102,7 +104,7 @@ class SentryTest extends TestCase
     public function testCaptureMessageReturnsEventId(): void
     {
         $sentry = new Sentry();
-        $sentry->dsn = 'https://examplePublicKey@o0.ingest.sentry.io/0';
+        $sentry->dsn = self::TEST_DSN;
         $sentry->init();
         
         $eventId = $sentry->captureMessage('Test message', 'error');
@@ -116,7 +118,7 @@ class SentryTest extends TestCase
         $callbackExecuted = false;
         
         $sentry = new Sentry();
-        $sentry->dsn = 'https://examplePublicKey@o0.ingest.sentry.io/0';
+        $sentry->dsn = self::TEST_DSN;
         $sentry->beforeSend = function ($event, $hint) use (&$callbackExecuted) {
             $callbackExecuted = true;
             return $event;
@@ -133,7 +135,7 @@ class SentryTest extends TestCase
     public function testClientOptionsAreMerged(): void
     {
         $sentry = new Sentry();
-        $sentry->dsn = 'https://examplePublicKey@o0.ingest.sentry.io/0';
+        $sentry->dsn = self::TEST_DSN;
         $sentry->clientOptions = [
             'server_name' => 'test-server',
             'release' => '2.0.0',
