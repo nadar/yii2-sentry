@@ -5,6 +5,8 @@ namespace Nadar\Sentry;
 use Sentry\Severity;
 use Sentry\State\Scope;
 use yii\di\Instance;
+use yii\helpers\ArrayHelper;
+use yii\helpers\StringHelper;
 use yii\log\Logger;
 use yii\log\Target;
 
@@ -70,7 +72,8 @@ class SentryTarget extends Target
         $severity = $this->getSeverity($level);
 
         // Prepare context data
-        $extra = [];
+        $extra = [
+        ];
 
         if (is_array($text)) {
             // if array has message or msg key extract that and put the rest in extra (but with
@@ -92,8 +95,7 @@ class SentryTarget extends Target
         $context = [
             'log_level' => Logger::getLevelName($level),
             'category' => $category,
-            'globals' => parent::getContextMessage(),
-            'timestamp' => $timestamp,
+            'globals' => $this->getContextData(),
         ];
 
         // Send to Sentry
@@ -152,6 +154,26 @@ class SentryTarget extends Target
             default:
                 return Severity::info();
         }
+    }
+
+    /**
+     * Generates the context information to be logged.
+     * Returns the data as an array for Sentry.
+     * 
+     * @return array the context information
+     */
+    protected function getContextData(): array
+    {
+        $context = ArrayHelper::filter($GLOBALS, $this->logVars);
+        $items = ArrayHelper::flatten($context);
+        foreach ($this->maskVars as $var) {
+            foreach ($items as $key => $value) {
+                if (StringHelper::matchWildcard($var, $key, ['caseSensitive' => false])) {
+                    ArrayHelper::setValue($context, $key, '***');
+                }
+            }
+        }
+        return $context;
     }
 
     /**
