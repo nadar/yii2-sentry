@@ -8,6 +8,7 @@ use Sentry\SentrySdk;
 use Sentry\Severity;
 use Sentry\State\HubInterface;
 use Sentry\State\Scope;
+use Sentry\UserDataBag;
 use Yii;
 use yii\base\Component as BaseComponent;
 use yii\base\InvalidConfigException;
@@ -104,18 +105,64 @@ class Sentry extends BaseComponent
 
         $options['before_send'] = function (Event $event): ?Event {
 
+            $extra = $event->getExtra() ?? [];
             if ($this->extraCallback && is_callable($this->extraCallback)) {
                 $extraCallbackData = call_user_func($this->extraCallback);
                 if (is_array($extraCallbackData)) {
-                    $event->setExtra($extraCallbackData);
+                    $extra = array_merge($extra, $extraCallbackData);
                 } else {
-                    $event->setExtra(['extra_callback_data' => var_export($extraCallbackData, true)]);
+                    $extra = array_merge($extra, ['extra_callback_data' => var_export($extraCallbackData, true)]);
                 }
+            }
+            $extra = array_merge($extra, $this->getAppExtras());
+            $event->setExtra($extra);
+            $event->setTags(array_merge($event->getTags(), $this->getAppTags()));
+            if ($event->getUser()) {
+                $event->getUser()->merge($this->getAppUserDataBag());
+            } else {
+                $event->setUser($this->getAppUserDataBag());
             }
             return $event;
         };
 
         init($options);
+    }
+
+    public function getAppTags() : array
+    {
+        return array_filter([
+            'app.name' => Yii::$app->name ?? null,
+            'app.id' => Yii::$app->id ?? null,
+            'yii.version' => Yii::getVersion(),
+        ]);
+    }
+
+    public function getAppExtras() : array
+    {
+        return [
+            'app' => array_filter([
+                'controller' => Yii::$app?->controller?->id ?? null,
+                'action' => Yii::$app?->controller?->action?->id ?? null,
+                'requested_route' => Yii::$app?->requestedRoute ?? null,
+                'requested_params' => Yii::$app?->requestedParams ?? null,
+            ])
+        ];
+    }
+
+    public function getAppUserDataBag() : UserDataBag
+    {
+        $userId = null;
+        try {
+            if (Yii::$app->has('user') && !Yii::$app->user->isGuest) {
+                $userId = Yii::$app->user->id;
+            }
+        } catch (\Throwable $e) {
+            
+        }
+        return new UserDataBag(
+            ipAddress: Yii::$app?->request?->userIP,
+            id: $userId,
+        );
     }
 
     /**
