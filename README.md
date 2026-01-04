@@ -1,6 +1,14 @@
-# yii2-sentry
+# Sentry for Yii2
 
 Yii2 Sentry integration with log target support for error tracking and monitoring.
+
+[![Tests](https://github.com/nadar/yii2-sentry/actions/workflows/tests.yml/badge.svg)](https://github.com/nadar/yii2-sentry/actions/workflows/tests.yml)
+
+:::warning[Yii Developers]
+Yii might look inactive, but it is still used a lot.
+
+This Sentry extension is **actively supported**, works with **current PHP versions**, and supports the **latest Sentry SDK options**.
+:::
 
 ## Requirements
 
@@ -9,7 +17,6 @@ Yii2 Sentry integration with log target support for error tracking and monitorin
 - Sentry PHP SDK >= 4.9
 
 ## Installation
-
 Install via Composer:
 
 ```bash
