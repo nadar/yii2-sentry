@@ -16,6 +16,20 @@ Install via Composer:
 composer require nadar/yii2-sentry
 ```
 
+### Verifying Installation
+
+After installing and configuring the package, you can verify that Sentry is working correctly:
+
+1. **Configure the Sentry component** in your `config/console.php` (for console apps) or `config/web.php` (for web apps)
+2. **Add the test command** to your console config (see Console Test Command section below)
+3. **Run the test command**:
+   ```bash
+   php yii sentry-test
+   ```
+4. **Check your Sentry dashboard** at https://sentry.io/ to see the test events
+
+The test command will send multiple test events including exceptions, messages, and events with custom context to help you verify your integration is working correctly.
+
 ## Configuration
 
 ### Basic Configuration
@@ -34,6 +48,28 @@ return [
     ],
 ];
 ```
+
+### Console Test Command (Optional)
+
+For console applications, you can add the Sentry test command to verify your integration:
+
+```php
+return [
+    'controllerMap' => [
+        'sentry-test' => [
+            'class' => 'Nadar\Sentry\SentryTestCommand',
+        ],
+    ],
+];
+```
+
+Then test your Sentry integration by running:
+
+```bash
+php yii sentry-test
+```
+
+This will send various test events to Sentry including exceptions, messages with different severity levels, log events, and events with custom context data. Check your Sentry dashboard to verify the events appear correctly.
 
 ### Log Target Configuration
 
@@ -88,6 +124,29 @@ return [
 - **extraCallback**: Callback function to add extra data to events (see below)
 
 ## Usage
+
+### Testing Your Integration
+
+The package includes a console command to test your Sentry integration. After configuration, run:
+
+```bash
+# Run all tests
+php yii sentry-test
+
+# Or run specific tests
+php yii sentry-test/exception  # Test exception capture
+php yii sentry-test/message    # Test message capture with different levels
+php yii sentry-test/logging    # Test Yii2 log integration
+php yii sentry-test/context    # Test custom context, tags, and user data
+```
+
+The test command will:
+- Send test exceptions with stack traces
+- Send messages with different severity levels (debug, info, warning, error, fatal)
+- Test Yii2 logging integration
+- Send events with custom context, user data, tags, and breadcrumbs
+
+After running the command, check your Sentry dashboard at https://sentry.io/ to verify the events appear correctly.
 
 ### Manual Exception Capture
 
