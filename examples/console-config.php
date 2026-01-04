@@ -22,7 +22,8 @@ return [
             'maxBreadcrumbs' => 100,
             
             // Global extra callback (optional)
-            'extraCallback' => function ($extra, $message) {
+            'extraCallback' => function () {
+                $extra = [];
                 // Add server information to all events
                 $extra['server_hostname'] = gethostname();
                 $extra['php_version'] = PHP_VERSION;
@@ -52,20 +53,6 @@ return [
                     
                     // Context variables to include (console-specific)
                     'logVars' => ['_SERVER'],
-                    
-                    // Custom callback to add extra context (optional)
-                    'extraCallback' => function ($extra, $message) {
-                        // Add command-line arguments
-                        global $argv;
-                        if (isset($argv)) {
-                            $extra['cli_args'] = implode(' ', $argv);
-                        }
-                        
-                        // Add current working directory
-                        $extra['cwd'] = getcwd();
-                        
-                        return $extra;
-                    },
                 ],
             ],
         ],

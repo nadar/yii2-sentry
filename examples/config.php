@@ -47,7 +47,8 @@ return [
                     'logVars' => ['_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_SERVER'],
                     
                     // Custom callback to add extra context (optional)
-                    'extraCallback' => function ($extra, $message) {
+                    'extraCallback' => function () {
+                        $extra = [];
                         // Add user information if available
                         if (!Yii::$app->user->isGuest) {
                             $extra['user'] = [

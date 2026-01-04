@@ -5,8 +5,11 @@ namespace Nadar\Sentry;
 use Sentry\SentrySdk;
 use Sentry\Severity;
 use Sentry\State\HubInterface;
+use Sentry\State\Scope;
 use yii\base\Component as BaseComponent;
 use yii\base\InvalidConfigException;
+
+use function Sentry\init;
 
 /**
  * Sentry Component for Yii2
@@ -78,10 +81,8 @@ class Sentry extends BaseComponent
 
     /**
      * @var callable|null Callback function to add extra data to the event
-     * The callback signature: function($extra, $message) { return $extra; }
+     * The callback signature: function() { return ['extra1' => 'value1']; }
      * This will be applied globally to all events sent through this component.
-     * If SentryTarget also defines an extraCallback, both will be merged with
-     * SentryTarget's callback having precedence.
      */
     public $extraCallback = null;
 
@@ -125,7 +126,20 @@ class Sentry extends BaseComponent
             $options['before_send'] = $this->beforeSend;
         }
 
-        \Sentry\init($options);
+        init($options);
+
+        if ($this->extraCallback && is_callable($this->extraCallback)) {
+            $this->getHub()->configureScope(function (Scope $scope) {
+                $extraCallbackData = call_user_func($this->extraCallback);
+                if (is_array($extraCallbackData)) {
+                    foreach ($extraCallbackData as $key => $value) {
+                        $scope->setExtra($key, $value);
+                    }
+                } else {
+                    $scope->setExtra('extra_callback_data', var_export($extraCallbackData, true));
+                }
+            });
+        }
     }
 
     /**

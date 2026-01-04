@@ -22,11 +22,6 @@ use yii\log\Target;
  *                 'yii\web\HttpException:404',
  *             ],
  *             'logVars' => ['_GET', '_POST', '_SERVER'],
- *             'extraCallback' => function ($extra, $message) {
- *                 // Add custom data
- *                 $extra['custom_key'] = 'custom_value';
- *                 return $extra;
- *             },
  *         ],
  *     ],
  * ],
@@ -41,12 +36,6 @@ class SentryTarget extends Target
      * @var string|Sentry
      */
     public string|Sentry $sentry = 'sentry';
-
-    /**
-     * @var callable|null Callback function to add extra data to the event
-     * The callback signature: function($extra, $message) { return $extra; }
-     */
-    public $extraCallback = null;
 
     /**
      * @inheritdoc
@@ -95,16 +84,6 @@ class SentryTarget extends Target
         // Add stack traces if available
         if (!empty($traces)) {
             $extra['traces'] = $traces;
-        }
-
-        // Apply Sentry component's extraCallback first (if defined)
-        if ($this->sentry->extraCallback !== null && is_callable($this->sentry->extraCallback)) {
-            $extra = call_user_func($this->sentry->extraCallback, $extra, $message);
-        }
-
-        // Apply SentryTarget's extraCallback second (takes precedence)
-        if ($this->extraCallback !== null && is_callable($this->extraCallback)) {
-            $extra = call_user_func($this->extraCallback, $extra, $message);
         }
 
         // Send to Sentry
