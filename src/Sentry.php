@@ -76,6 +76,15 @@ class Sentry extends BaseComponent
     public $beforeSend = null;
 
     /**
+     * @var callable|null Callback function to add extra data to the event
+     * The callback signature: function($message, $extra) { return $extra; }
+     * This will be applied globally to all events sent through this component.
+     * If SentryTarget also defines an extraCallback, both will be merged with
+     * SentryTarget's callback having precedence.
+     */
+    public $extraCallback = null;
+
+    /**
      * @inheritdoc
      * @throws InvalidConfigException
      */

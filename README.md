@@ -77,6 +77,7 @@ return [
 - **maxBreadcrumbs**: Maximum breadcrumbs (default: 100)
 - **clientOptions**: Additional client options for Sentry SDK
 - **beforeSend**: Callback function called before sending events
+- **extraCallback**: Global callback function to add extra data to all events (see below)
 
 ### Log Target Options
 
@@ -84,7 +85,7 @@ return [
 - **levels**: Array of log levels to capture (e.g., ['error', 'warning'])
 - **except**: Array of patterns to exclude from logging (e.g., ['yii\web\HttpException:404'])
 - **logVars**: Array of context variables to log (e.g., ['_GET', '_POST', '_SERVER'])
-- **extraCallback**: Callback function to add extra data to events
+- **extraCallback**: Callback function to add extra data to events (see below)
 
 ## Usage
 
@@ -113,6 +114,85 @@ The log target will automatically capture messages logged through Yii2's logger:
 ```php
 Yii::error('An error occurred');
 Yii::warning('A warning message');
+```
+
+## Extra Callbacks
+
+### Overview
+
+Both the Sentry component and SentryTarget support `extraCallback` functions to add custom context data to events. When both callbacks are defined, they are merged together with the SentryTarget callback taking precedence.
+
+### Global Extra Callback (Sentry Component)
+
+Define a global `extraCallback` in the Sentry component to add context data to ALL events:
+
+```php
+return [
+    'components' => [
+        'sentry' => [
+            'class' => 'Nadar\Sentry\Sentry',
+            'dsn' => 'YOUR_SENTRY_DSN',
+            'extraCallback' => function ($message, $extra) {
+                // Add global context to all events
+                $extra['app_version'] = '1.0.0';
+                $extra['server_id'] = gethostname();
+                return $extra;
+            },
+        ],
+    ],
+];
+```
+
+### Target-Specific Extra Callback (SentryTarget)
+
+Define a target-specific `extraCallback` in the SentryTarget to add context data to log events:
+
+```php
+return [
+    'components' => [
+        'log' => [
+            'targets' => [
+                [
+                    'class' => 'Nadar\Sentry\SentryTarget',
+                    'levels' => ['error', 'warning'],
+                    'extraCallback' => function ($message, $extra) {
+                        // Add log-specific context
+                        $extra['user_id'] = Yii::$app->user->id ?? null;
+                        return $extra;
+                    },
+                ],
+            ],
+        ],
+    ],
+];
+```
+
+### Callback Merging Behavior
+
+When both callbacks are defined:
+
+1. The Sentry component's `extraCallback` is applied first (global context)
+2. The SentryTarget's `extraCallback` is applied second (can override global context)
+3. If both callbacks set the same key, the SentryTarget value takes precedence
+
+**Example:**
+
+```php
+// Sentry component callback
+'extraCallback' => function ($message, $extra) {
+    $extra['environment'] = 'global';
+    $extra['version'] = '1.0.0';
+    return $extra;
+}
+
+// SentryTarget callback
+'extraCallback' => function ($message, $extra) {
+    $extra['environment'] = 'production'; // This overrides the global value
+    $extra['user_id'] = 123; // This is added
+    return $extra;
+}
+
+// Result: ['environment' => 'production', 'version' => '1.0.0', 'user_id' => 123]
 ```
 
 ## License

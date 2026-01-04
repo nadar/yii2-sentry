@@ -98,7 +98,12 @@ class SentryTarget extends Target
             $extra['traces'] = $traces;
         }
 
-        // Apply extra callback if defined
+        // Apply Sentry component's extraCallback first (if defined)
+        if ($this->sentry->extraCallback !== null && is_callable($this->sentry->extraCallback)) {
+            $extra = call_user_func($this->sentry->extraCallback, $message, $extra);
+        }
+
+        // Apply SentryTarget's extraCallback second (takes precedence)
         if ($this->extraCallback !== null && is_callable($this->extraCallback)) {
             $extra = call_user_func($this->extraCallback, $message, $extra);
         }
