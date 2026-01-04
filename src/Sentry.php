@@ -12,6 +12,7 @@ use Sentry\UserDataBag;
 use Yii;
 use yii\base\Component as BaseComponent;
 use yii\base\InvalidConfigException;
+use yii\web\Application;
 
 use function Sentry\init;
 
@@ -117,10 +118,14 @@ class Sentry extends BaseComponent
             $extra = array_merge($extra, $this->getAppExtras());
             $event->setExtra($extra);
             $event->setTags(array_merge($event->getTags(), $this->getAppTags()));
-            if ($event->getUser()) {
-                $event->getUser()->merge($this->getAppUserDataBag());
-            } else {
-                $event->setUser($this->getAppUserDataBag());
+            $appUser = $this->getAppUserDataBag();
+
+            if ($appUser) {
+                if ($event->getUser()) {
+                    $event->getUser()->merge($appUser);
+                } else {
+                    $event->setUser($appUser);
+                }
             }
             return $event;
         };
@@ -149,8 +154,12 @@ class Sentry extends BaseComponent
         ];
     }
 
-    public function getAppUserDataBag() : UserDataBag
+    public function getAppUserDataBag() : UserDataBag|false
     {
+        if (!Yii::$app instanceof Application) {
+            return false;
+        }
+
         $userId = null;
         try {
             if (Yii::$app->has('user') && !Yii::$app->user->isGuest) {
