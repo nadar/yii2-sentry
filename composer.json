@@ -1,0 +1,27 @@
+{
+    "name": "nadar/yii2-sentry",
+    "description": "Yii2 Sentry integration with log target support",
+    "type": "yii2-extension",
+    "keywords": ["yii2", "sentry", "logging", "error tracking"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Basil Suter",
+            "email": "git@nadar.io"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "sentry/sentry": "^4.0|^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nadar\\Sentry\\": "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
+}
