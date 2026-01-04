@@ -4,7 +4,6 @@ namespace Nadar\Sentry;
 
 use Sentry\Severity;
 use Sentry\State\Scope;
-use yii\base\InvalidConfigException;
 use yii\di\Instance;
 use yii\log\Logger;
 use yii\log\Target;

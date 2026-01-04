@@ -24,9 +24,6 @@ use Yii;
  * Usage:
  * ```
  * php yii sentry-test
- * php yii sentry-test/exception
- * php yii sentry-test/message
- * php yii sentry-test/all
  * ```
  * 
  * @author Basil Suter <git@nadar.io>
@@ -55,6 +52,13 @@ class SentryTestCommand extends Controller
             }
             $this->sentry = Yii::$app->get($this->sentry);
         }
+
+        $this->sentry->extraCallback(function ($message, $extra) {
+            // Add command name to extra data
+            $extra['command'] = 'sentry-test';
+            $extra['message_exported'] = var_export($message, true);
+            return $extra;
+        });
     }
 
     /**
@@ -66,94 +70,10 @@ class SentryTestCommand extends Controller
     {
         $this->stdout("=== Sentry Integration Test ===\n\n", \yii\helpers\Console::BOLD);
         
-        $this->stdout("This command will send multiple test events to Sentry.\n");
-        $this->stdout("Check your Sentry dashboard to verify they appear correctly.\n\n");
-        
-        // Run all test actions
-        $this->actionException();
-        $this->stdout("\n");
-        $this->actionMessage();
-        $this->stdout("\n");
-        $this->actionLogging();
-        $this->stdout("\n");
         $this->actionContext();
         
         $this->stdout("\n=== Test Complete ===\n", \yii\helpers\Console::BOLD);
         $this->stdout("Check your Sentry dashboard at: https://sentry.io/\n", \yii\helpers\Console::FG_GREEN);
-        
-        return ExitCode::OK;
-    }
-
-    /**
-     * Test exception capture
-     * 
-     * Sends a test exception to Sentry with stack trace and context.
-     * 
-     * @return int
-     */
-    public function actionException(): int
-    {
-        $this->stdout("→ Testing exception capture...\n", \yii\helpers\Console::FG_CYAN);
-        
-        try {
-            // Create a nested call stack for better demonstration
-            $this->triggerNestedExceptions();
-        } catch (\Exception $e) {
-            $eventId = $this->sentry->captureException($e);
-            $this->stdout("  ✓ Exception captured (Event ID: {$eventId})\n", \yii\helpers\Console::FG_GREEN);
-        }
-        
-        return ExitCode::OK;
-    }
-
-    /**
-     * Test message capture with different severity levels
-     * 
-     * Sends test messages to Sentry with various severity levels.
-     * 
-     * @return int
-     */
-    public function actionMessage(): int
-    {
-        $this->stdout("→ Testing message capture with different severity levels...\n", \yii\helpers\Console::FG_CYAN);
-        
-        $messages = [
-            ['message' => 'This is a debug message from yii2-sentry', 'level' => 'debug'],
-            ['message' => 'This is an info message from yii2-sentry', 'level' => 'info'],
-            ['message' => 'This is a warning message from yii2-sentry', 'level' => 'warning'],
-            ['message' => 'This is an error message from yii2-sentry', 'level' => 'error'],
-            ['message' => 'This is a fatal message from yii2-sentry', 'level' => 'fatal'],
-        ];
-        
-        foreach ($messages as $msg) {
-            $eventId = $this->sentry->captureMessage($msg['message'], $msg['level']);
-            $this->stdout("  ✓ {$msg['level']} message sent (Event ID: {$eventId})\n", \yii\helpers\Console::FG_GREEN);
-        }
-        
-        return ExitCode::OK;
-    }
-
-    /**
-     * Test Yii2 logging integration
-     * 
-     * Tests the SentryTarget by using Yii2's logging system.
-     * 
-     * @return int
-     */
-    public function actionLogging(): int
-    {
-        $this->stdout("→ Testing Yii2 log target integration...\n", \yii\helpers\Console::FG_CYAN);
-        
-        // These should be captured by SentryTarget if configured
-        Yii::error('Test error log message via Yii logger');
-        Yii::warning('Test warning log message via Yii logger');
-        Yii::info('Test info log message via Yii logger');
-        
-        // Flush logs to ensure they're sent
-        Yii::$app->log->getLogger()->flush(true);
-        
-        $this->stdout("  ✓ Log messages sent via Yii logger\n", \yii\helpers\Console::FG_GREEN);
-        $this->stdout("  Note: These will only appear in Sentry if SentryTarget is configured\n", \yii\helpers\Console::FG_YELLOW);
         
         return ExitCode::OK;
     }
@@ -231,56 +151,4 @@ class SentryTestCommand extends Controller
         return ExitCode::OK;
     }
 
-    /**
-     * Run all tests sequentially
-     * 
-     * @return int
-     */
-    public function actionAll(): int
-    {
-        return $this->actionIndex();
-    }
-
-    /**
-     * Helper method to create nested exceptions for better stack trace demonstration
-     * 
-     * @throws \Exception
-     */
-    private function triggerNestedExceptions(): void
-    {
-        $this->levelOne();
-    }
-
-    /**
-     * First level of nested call
-     * 
-     * @throws \Exception
-     */
-    private function levelOne(): void
-    {
-        $this->levelTwo();
-    }
-
-    /**
-     * Second level of nested call
-     * 
-     * @throws \Exception
-     */
-    private function levelTwo(): void
-    {
-        $this->levelThree();
-    }
-
-    /**
-     * Third level of nested call - throws the exception
-     * 
-     * @throws \Exception
-     */
-    private function levelThree(): void
-    {
-        throw new \Exception(
-            'Test exception from yii2-sentry console command - This is a test!',
-            500
-        );
-    }
 }

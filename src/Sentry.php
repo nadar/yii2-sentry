@@ -56,7 +56,8 @@ class Sentry extends BaseComponent
     public float $tracesSampleRate = 0.0;
 
     /**
-     * @var array Additional client options for Sentry SDK
+     * @var array Additional client options for Sentry SDK, see https://docs.sentry.io/platforms/php/configuration/options/ for all options
+     * @see https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/
      */
     public array $clientOptions = [];
 
