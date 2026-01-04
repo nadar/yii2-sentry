@@ -13,9 +13,7 @@ return [
         // Sentry component configuration
         'sentry' => [
             'class' => 'Nadar\Sentry\Sentry',
-            'dsn' => 'YOUR_SENTRY_DSN', // Replace with your actual DSN
-            'environment' => getenv('APP_ENV') ?: 'production',
-            'release' => '1.0.0', // Your application version
+            'dsn' => 'YOUR_SENTRY_DSN', 
             'sampleRate' => 1.0, // Capture 100% of errors
             'tracesSampleRate' => 0.1, // Capture 10% of performance traces
             'sendDefaultPii' => false,

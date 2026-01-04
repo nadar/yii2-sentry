@@ -46,8 +46,6 @@ return [
         'sentry' => [
             'class' => 'Nadar\Sentry\Sentry',
             'dsn' => 'YOUR_SENTRY_DSN',
-            'environment' => 'production',
-            'release' => '1.0.0',
         ],
     ],
 ];
@@ -104,8 +102,6 @@ return [
 ### Sentry Component Options
 
 - **dsn** (required): Your Sentry DSN (Data Source Name)
-- **environment**: Environment name (e.g., 'production', 'staging', 'development')
-- **release**: Release version
 - **sampleRate**: Sample rate for error events (0.0 to 1.0, default: 1.0)
 - **tracesSampleRate**: Sample rate for performance monitoring (0.0 to 1.0, default: 0.0)
 - **sendDefaultPii**: Whether to send default PII (Personally Identifiable Information)

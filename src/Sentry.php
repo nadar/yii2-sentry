@@ -8,6 +8,7 @@ use Sentry\SentrySdk;
 use Sentry\Severity;
 use Sentry\State\HubInterface;
 use Sentry\State\Scope;
+use Yii;
 use yii\base\Component as BaseComponent;
 use yii\base\InvalidConfigException;
 
@@ -24,8 +25,6 @@ use function Sentry\init;
  *     'sentry' => [
  *         'class' => 'Nadar\Sentry\Sentry',
  *         'dsn' => 'your-sentry-dsn',
- *         'environment' => 'production',
- *         'release' => '1.0.0',
  *     ]
  * ]
  * ```
@@ -39,16 +38,6 @@ class Sentry extends BaseComponent
      * @var string Sentry DSN (Data Source Name)
      */
     public string $dsn;
-
-    /**
-     * @var string|null Environment name (e.g., 'production', 'staging', 'development')
-     */
-    public ?string $environment = null;
-
-    /**
-     * @var string|null Release version
-     */
-    public ?string $release = null;
 
     /**
      * @var float Sample rate for error events (0.0 to 1.0)
@@ -109,15 +98,9 @@ class Sentry extends BaseComponent
             'traces_sample_rate' => $this->tracesSampleRate,
             'send_default_pii' => $this->sendDefaultPii,
             'max_breadcrumbs' => $this->maxBreadcrumbs,
+            'environment' => YII_ENV,
+            'release' => Yii::$app->version ?? null,
         ], $this->clientOptions);
-
-        if ($this->environment !== null) {
-            $options['environment'] = $this->environment;
-        }
-
-        if ($this->release !== null) {
-            $options['release'] = $this->release;
-        }
 
         $options['before_send'] = function (Event $event): ?Event {
 

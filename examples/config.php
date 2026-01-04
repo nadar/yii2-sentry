@@ -11,8 +11,6 @@ return [
         'sentry' => [
             'class' => 'Nadar\Sentry\Sentry',
             'dsn' => 'YOUR_SENTRY_DSN',
-            'environment' => getenv('APP_ENV') ?: 'production',
-            'release' => '1.0.0',
             'sampleRate' => 1.0,
             'tracesSampleRate' => 0.1,
             'sendDefaultPii' => false,

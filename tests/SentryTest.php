@@ -46,8 +46,6 @@ class SentryTest extends TestCase
     {
         $sentry = new Sentry(['dsn' => self::TEST_DSN]);
         
-        $this->assertNull($sentry->environment);
-        $this->assertNull($sentry->release);
         $this->assertEquals(1.0, $sentry->sampleRate);
         $this->assertEquals(0.0, $sentry->tracesSampleRate);
         $this->assertFalse($sentry->sendDefaultPii);
@@ -60,16 +58,12 @@ class SentryTest extends TestCase
     {
         $sentry = new Sentry([
             'dsn' => self::TEST_DSN,
-            'environment' => 'production',
-            'release' => '1.0.0',
             'sampleRate' => 0.5,
             'tracesSampleRate' => 0.1,
             'sendDefaultPii' => true,
             'maxBreadcrumbs' => 50,
         ]);
         
-        $this->assertEquals('production', $sentry->environment);
-        $this->assertEquals('1.0.0', $sentry->release);
         $this->assertEquals(0.5, $sentry->sampleRate);
         $this->assertEquals(0.1, $sentry->tracesSampleRate);
         $this->assertTrue($sentry->sendDefaultPii);
