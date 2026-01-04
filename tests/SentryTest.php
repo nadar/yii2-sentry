@@ -52,7 +52,6 @@ class SentryTest extends TestCase
         $this->assertEquals(0.0, $sentry->tracesSampleRate);
         $this->assertFalse($sentry->sendDefaultPii);
         $this->assertEquals(100, $sentry->maxBreadcrumbs);
-        $this->assertNull($sentry->beforeSend);
         $this->assertIsArray($sentry->clientOptions);
         $this->assertEmpty($sentry->clientOptions);
     }
@@ -107,26 +106,6 @@ class SentryTest extends TestCase
         
         // Event ID should be a string or null
         $this->assertTrue(is_string($eventId) || is_null($eventId));
-    }
-
-    public function testBeforeSendCallback(): void
-    {
-        $callbackExecuted = false;
-        
-        $sentry = new Sentry([
-            'dsn' => self::TEST_DSN,
-            'beforeSend' => function ($event, $hint) use (&$callbackExecuted) {
-                $callbackExecuted = true;
-                return $event;
-            },
-        ]);
-        $sentry->init();
-        
-        $sentry->captureMessage('Test message');
-        
-        // Note: callback execution depends on Sentry SDK internals
-        // This test validates that the callback can be set without errors
-        $this->assertNotNull($sentry->beforeSend);
     }
 
     public function testClientOptionsAreMerged(): void

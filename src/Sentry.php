@@ -2,6 +2,8 @@
 
 namespace Nadar\Sentry;
 
+use Sentry\Event;
+use Sentry\EventHint;
 use Sentry\SentrySdk;
 use Sentry\Severity;
 use Sentry\State\HubInterface;
@@ -75,11 +77,6 @@ class Sentry extends BaseComponent
     public int $maxBreadcrumbs = 100;
 
     /**
-     * @var callable|null Before send callback
-     */
-    public $beforeSend = null;
-
-    /**
      * @var callable|null Callback function to add extra data to the event
      * The callback signature: function() { return ['extra1' => 'value1']; }
      * This will be applied globally to all events sent through this component.
@@ -122,24 +119,20 @@ class Sentry extends BaseComponent
             $options['release'] = $this->release;
         }
 
-        if ($this->beforeSend !== null && is_callable($this->beforeSend)) {
-            $options['before_send'] = $this->beforeSend;
-        }
+        $options['before_send'] = function (Event $event): ?Event {
 
-        init($options);
-
-        if ($this->extraCallback && is_callable($this->extraCallback)) {
-            $this->getHub()->configureScope(function (Scope $scope) {
+            if ($this->extraCallback && is_callable($this->extraCallback)) {
                 $extraCallbackData = call_user_func($this->extraCallback);
                 if (is_array($extraCallbackData)) {
-                    foreach ($extraCallbackData as $key => $value) {
-                        $scope->setExtra($key, $value);
-                    }
+                    $event->setExtra($extraCallbackData);
                 } else {
-                    $scope->setExtra('extra_callback_data', var_export($extraCallbackData, true));
+                    $event->setExtra(['extra_callback_data' => var_export($extraCallbackData, true)]);
                 }
-            });
-        }
+            }
+            return $event;
+        };
+
+        init($options);
     }
 
     /**

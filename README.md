@@ -111,7 +111,6 @@ return [
 - **sendDefaultPii**: Whether to send default PII (Personally Identifiable Information)
 - **maxBreadcrumbs**: Maximum breadcrumbs (default: 100)
 - **clientOptions**: Additional client options for Sentry SDK
-- **beforeSend**: Callback function called before sending events
 - **extraCallback**: Global callback function to add extra data to all events (see below)
 
 ### Log Target Options
