@@ -52,10 +52,10 @@ class SentryTarget extends Target
     /**
      * @inheritdoc
      */
-    public function __construct($config = [])
+    public function init()
     {
-        parent::__construct($config);
-
+        parent::init();
+        
         $this->sentry = Instance::ensure($this->sentry, Sentry::class);
     }
 
