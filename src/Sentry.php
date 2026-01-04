@@ -118,8 +118,9 @@ class Sentry extends BaseComponent
             $extra = array_merge($extra, $this->getAppExtras());
             $event->setExtra($extra);
             $event->setTags(array_merge($event->getTags(), $this->getAppTags()));
-            $appUser = $this->getAppUserDataBag();
 
+            // merge data user bag or add new if not empty
+            $appUser = $this->getAppUserDataBag();
             if ($appUser) {
                 if ($event->getUser()) {
                     $event->getUser()->merge($appUser);
@@ -136,8 +137,6 @@ class Sentry extends BaseComponent
     public function getAppTags() : array
     {
         return array_filter([
-            'app.name' => Yii::$app->name ?? null,
-            'app.id' => Yii::$app->id ?? null,
             'yii.version' => Yii::getVersion(),
         ]);
     }
@@ -146,6 +145,10 @@ class Sentry extends BaseComponent
     {
         return [
             'app' => array_filter([
+                'name' => Yii::$app->name ?? null,
+                'id' => Yii::$app->id ?? null,
+            ]),
+            'routing' => array_filter([
                 'controller' => Yii::$app?->controller?->id ?? null,
                 'action' => Yii::$app?->controller?->action?->id ?? null,
                 'requested_route' => Yii::$app?->requestedRoute ?? null,
