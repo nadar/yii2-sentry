@@ -290,7 +290,7 @@ class SentryTargetTest extends TestCase
         $target = $this->getConfiguredSentryTarget();
         
         $callbackExecuted = false;
-        $target->extraCallback = function ($message, $extra) use (&$callbackExecuted) {
+        $target->extraCallback = function ($extra, $message) use (&$callbackExecuted) {
             $callbackExecuted = true;
             $extra['custom_data'] = 'custom_value';
             return $extra;
@@ -315,7 +315,7 @@ class SentryTargetTest extends TestCase
         $target = $this->getConfiguredSentryTarget();
         
         $callbackExecuted = false;
-        $target->sentry->extraCallback = function ($message, $extra) use (&$callbackExecuted) {
+        $target->sentry->extraCallback = function ($extra, $message) use (&$callbackExecuted) {
             $callbackExecuted = true;
             $extra['global_data'] = 'global_value';
             return $extra;
@@ -343,7 +343,7 @@ class SentryTargetTest extends TestCase
         $targetCallbackExecuted = false;
         
         // Set global callback on Sentry component
-        $target->sentry->extraCallback = function ($message, $extra) use (&$sentryCallbackExecuted) {
+        $target->sentry->extraCallback = function ($extra, $message) use (&$sentryCallbackExecuted) {
             $sentryCallbackExecuted = true;
             $extra['shared_key'] = 'from_sentry_component';
             $extra['sentry_only'] = 'sentry_value';
@@ -351,7 +351,7 @@ class SentryTargetTest extends TestCase
         };
         
         // Set target-specific callback
-        $target->extraCallback = function ($message, $extra) use (&$targetCallbackExecuted) {
+        $target->extraCallback = function ($extra, $message) use (&$targetCallbackExecuted) {
             $targetCallbackExecuted = true;
             // This should override the shared_key from Sentry component
             $extra['shared_key'] = 'from_sentry_target';
@@ -388,14 +388,14 @@ class SentryTargetTest extends TestCase
         $executionOrder = [];
         
         // Set global callback on Sentry component
-        $target->sentry->extraCallback = function ($message, $extra) use (&$executionOrder) {
+        $target->sentry->extraCallback = function ($extra, $message) use (&$executionOrder) {
             $executionOrder[] = 'sentry';
             $extra['execution_order'] = 'first';
             return $extra;
         };
         
         // Set target-specific callback
-        $target->extraCallback = function ($message, $extra) use (&$executionOrder) {
+        $target->extraCallback = function ($extra, $message) use (&$executionOrder) {
             $executionOrder[] = 'target';
             // Verify that sentry callback was executed first
             $this->assertEquals('first', $extra['execution_order']);
@@ -425,7 +425,7 @@ class SentryTargetTest extends TestCase
         $callbackExecuted = false;
         
         // Set only global callback on Sentry component
-        $target->sentry->extraCallback = function ($message, $extra) use (&$callbackExecuted) {
+        $target->sentry->extraCallback = function ($extra, $message) use (&$callbackExecuted) {
             $callbackExecuted = true;
             $extra['only_sentry'] = 'value';
             return $extra;
@@ -458,7 +458,7 @@ class SentryTargetTest extends TestCase
         $target->sentry->extraCallback = null;
         
         // Set only target callback
-        $target->extraCallback = function ($message, $extra) use (&$callbackExecuted) {
+        $target->extraCallback = function ($extra, $message) use (&$callbackExecuted) {
             $callbackExecuted = true;
             $extra['only_target'] = 'value';
             return $extra;

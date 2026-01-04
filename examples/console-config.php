@@ -22,7 +22,7 @@ return [
             'maxBreadcrumbs' => 100,
             
             // Global extra callback (optional)
-            'extraCallback' => function ($message, $extra) {
+            'extraCallback' => function ($extra, $message) {
                 // Add server information to all events
                 $extra['server_hostname'] = gethostname();
                 $extra['php_version'] = PHP_VERSION;
@@ -54,7 +54,7 @@ return [
                     'logVars' => ['_SERVER'],
                     
                     // Custom callback to add extra context (optional)
-                    'extraCallback' => function ($message, $extra) {
+                    'extraCallback' => function ($extra, $message) {
                         // Add command-line arguments
                         global $argv;
                         if (isset($argv)) {

@@ -88,7 +88,7 @@ return [
                         'yii\web\HttpException:403',
                     ],
                     'logVars' => ['_GET', '_POST', '_SESSION', '_SERVER'],
-                    'extraCallback' => function ($message, $extra) {
+                    'extraCallback' => function ($extra, $message) {
                         // Add custom context data
                         $extra['custom_field'] = 'custom_value';
                         return $extra;
@@ -191,7 +191,7 @@ return [
         'sentry' => [
             'class' => 'Nadar\Sentry\Sentry',
             'dsn' => 'YOUR_SENTRY_DSN',
-            'extraCallback' => function ($message, $extra) {
+            'extraCallback' => function ($extra, $message) {
                 // Add global context to all events
                 $extra['app_version'] = '1.0.0';
                 $extra['server_id'] = gethostname();
@@ -214,7 +214,7 @@ return [
                 [
                     'class' => 'Nadar\Sentry\SentryTarget',
                     'levels' => ['error', 'warning'],
-                    'extraCallback' => function ($message, $extra) {
+                    'extraCallback' => function ($extra, $message) {
                         // Add log-specific context
                         $extra['user_id'] = Yii::$app->user->id ?? null;
                         return $extra;
@@ -238,14 +238,14 @@ When both callbacks are defined:
 
 ```php
 // Sentry component callback
-'extraCallback' => function ($message, $extra) {
+'extraCallback' => function ($extra, $message) {
     $extra['environment'] = 'global';
     $extra['version'] = '1.0.0';
     return $extra;
 }
 
 // SentryTarget callback
-'extraCallback' => function ($message, $extra) {
+'extraCallback' => function ($extra, $message) {
     $extra['environment'] = 'production'; // This overrides the global value
     $extra['user_id'] = 123; // This is added
     return $extra;
