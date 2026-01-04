@@ -53,12 +53,12 @@ class SentryTestCommand extends Controller
             $this->sentry = Yii::$app->get($this->sentry);
         }
 
-        $this->sentry->extraCallback(function ($message, $extra) {
+        $this->sentry->extraCallback = function ($message, $extra) {
             // Add command name to extra data
             $extra['command'] = 'sentry-test';
             $extra['message_exported'] = var_export($message, true);
             return $extra;
-        });
+        };
     }
 
     /**
