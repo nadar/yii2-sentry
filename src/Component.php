@@ -2,7 +2,6 @@
 
 namespace Nadar\Sentry;
 
-use Sentry\ClientBuilder;
 use Sentry\State\Hub;
 use yii\base\Component as BaseComponent;
 use yii\base\InvalidConfigException;
@@ -114,8 +113,7 @@ class Component extends BaseComponent
             $options['before_send'] = $this->beforeSend;
         }
 
-        $client = ClientBuilder::create($options)->getClient();
-        Hub::getCurrent()->bindClient($client);
+        \Sentry\init($options);
     }
 
     /**

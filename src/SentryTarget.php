@@ -2,11 +2,7 @@
 
 namespace Nadar\Sentry;
 
-use Sentry\Breadcrumb;
-use Sentry\Event;
-use Sentry\EventHint;
 use Sentry\Severity;
-use Sentry\State\Hub;
 use Sentry\State\Scope;
 use yii\base\InvalidConfigException;
 use yii\log\Logger;
@@ -166,22 +162,22 @@ class SentryTarget extends Target
      */
     protected function sendToSentry($text, $severity, $extra, $category)
     {
-        \Sentry\configureScope(function (Scope $scope) use ($extra, $category, $severity) {
+        \Sentry\withScope(function (Scope $scope) use ($text, $severity, $extra, $category) {
             $scope->setContext('extra', $extra);
             $scope->setTag('category', $category);
             $scope->setLevel($severity);
-        });
 
-        if ($text instanceof \Throwable) {
-            \Sentry\captureException($text);
-        } else {
-            // Handle array or object messages
-            if (is_array($text) || is_object($text)) {
-                $text = print_r($text, true);
+            if ($text instanceof \Throwable) {
+                \Sentry\captureException($text);
+            } else {
+                // Handle array or object messages
+                if (is_array($text) || is_object($text)) {
+                    $text = print_r($text, true);
+                }
+                
+                \Sentry\captureMessage((string) $text, $severity);
             }
-            
-            \Sentry\captureMessage((string) $text, $severity);
-        }
+        });
     }
 
     /**
@@ -218,9 +214,35 @@ class SentryTarget extends Target
     protected function getContextMessage()
     {
         $context = [];
+        $allowedVars = ['_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_SERVER'];
         
         foreach ((array) $this->logVars as $var) {
-            if (!empty($GLOBALS[$var])) {
+            // Only allow safe global variables
+            if (!in_array($var, $allowedVars, true)) {
+                continue;
+            }
+
+            // Use Yii's request object for request-related data when available
+            if (\Yii::$app->has('request') && in_array($var, ['_GET', '_POST', '_FILES', '_COOKIE'], true)) {
+                $request = \Yii::$app->request;
+                switch ($var) {
+                    case '_GET':
+                        $context[$var] = $request->get();
+                        break;
+                    case '_POST':
+                        $context[$var] = $request->post();
+                        break;
+                    case '_COOKIE':
+                        $context[$var] = $request->cookies->toArray();
+                        break;
+                    case '_FILES':
+                        if (isset($GLOBALS[$var]) && !empty($GLOBALS[$var])) {
+                            // Files need to be accessed from $_FILES directly
+                            $context[$var] = $GLOBALS[$var];
+                        }
+                        break;
+                }
+            } elseif (isset($GLOBALS[$var]) && !empty($GLOBALS[$var])) {
                 $context[$var] = $GLOBALS[$var];
             }
         }
