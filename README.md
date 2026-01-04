@@ -2,6 +2,12 @@
 
 Yii2 Sentry integration with log target support for error tracking and monitoring.
 
+## Requirements
+
+- PHP >= 8.4
+- Yii2 >= 2.0
+- Sentry PHP SDK >= 5.0
+
 ## Installation
 
 Install via Composer:
@@ -20,7 +26,7 @@ Configure the Sentry component in your application config:
 return [
     'components' => [
         'sentry' => [
-            'class' => 'Nadar\Sentry\Component',
+            'class' => 'Nadar\Sentry\Sentry',
             'dsn' => 'YOUR_SENTRY_DSN',
             'environment' => 'production',
             'release' => '1.0.0',
@@ -46,9 +52,6 @@ return [
                         'yii\web\HttpException:403',
                     ],
                     'logVars' => ['_GET', '_POST', '_SESSION', '_SERVER'],
-                    'clientOptions' => [
-                        'environment' => 'production',
-                    ],
                     'extraCallback' => function ($message, $extra) {
                         // Add custom context data
                         $extra['custom_field'] = 'custom_value';
@@ -61,27 +64,9 @@ return [
 ];
 ```
 
-Alternatively, you can configure the log target without the component by providing the DSN directly:
-
-```php
-return [
-    'components' => [
-        'log' => [
-            'targets' => [
-                [
-                    'class' => 'Nadar\Sentry\SentryTarget',
-                    'dsn' => 'YOUR_SENTRY_DSN',
-                    'levels' => ['error', 'warning'],
-                ],
-            ],
-        ],
-    ],
-];
-```
-
 ## Configuration Options
 
-### Component Options
+### Sentry Component Options
 
 - **dsn** (required): Your Sentry DSN (Data Source Name)
 - **environment**: Environment name (e.g., 'production', 'staging', 'development')
@@ -95,11 +80,10 @@ return [
 
 ### Log Target Options
 
-- **dsn**: Your Sentry DSN (required if sentry component is not configured)
+- **sentry**: The Sentry component ID (default: 'sentry')
 - **levels**: Array of log levels to capture (e.g., ['error', 'warning'])
 - **except**: Array of patterns to exclude from logging (e.g., ['yii\web\HttpException:404'])
 - **logVars**: Array of context variables to log (e.g., ['_GET', '_POST', '_SERVER'])
-- **clientOptions**: Additional client options for Sentry SDK
 - **extraCallback**: Callback function to add extra data to events
 
 ## Usage
@@ -130,12 +114,6 @@ The log target will automatically capture messages logged through Yii2's logger:
 Yii::error('An error occurred');
 Yii::warning('A warning message');
 ```
-
-## Requirements
-
-- PHP >= 7.4
-- Yii2 >= 2.0
-- Sentry PHP SDK >= 4.0
 
 ## License
 

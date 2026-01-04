@@ -5,6 +5,7 @@ namespace Nadar\Sentry;
 use Sentry\Severity;
 use Sentry\State\Scope;
 use yii\base\InvalidConfigException;
+use yii\di\Instance;
 use yii\log\Logger;
 use yii\log\Target;
 
@@ -17,15 +18,11 @@ use yii\log\Target;
  *     'targets' => [
  *         [
  *             'class' => 'Nadar\Sentry\SentryTarget',
- *             'dsn' => 'your-sentry-dsn',
  *             'levels' => ['error', 'warning'],
  *             'except' => [
  *                 'yii\web\HttpException:404',
  *             ],
  *             'logVars' => ['_GET', '_POST', '_SERVER'],
- *             'clientOptions' => [
- *                 'environment' => 'production',
- *             ],
  *             'extraCallback' => function ($message, $extra) {
  *                 // Add custom data
  *                 $extra['custom_key'] = 'custom_value';
@@ -42,62 +39,24 @@ use yii\log\Target;
 class SentryTarget extends Target
 {
     /**
-     * @var string Sentry DSN (Data Source Name)
+     * @var string|Sentry
      */
-    public $dsn;
-
-    /**
-     * @var array Additional client options for Sentry SDK
-     */
-    public $clientOptions = [];
+    public string|Sentry $sentry = 'sentry';
 
     /**
      * @var callable|null Callback function to add extra data to the event
      * The callback signature: function($message, $extra) { return $extra; }
      */
-    public $extraCallback;
-
-    /**
-     * @var Component|null Reference to Sentry component
-     */
-    protected $component;
-
-    /**
-     * @var bool Whether Sentry has been initialized
-     */
-    protected $initialized = false;
+    public $extraCallback = null;
 
     /**
      * @inheritdoc
-     * @throws InvalidConfigException
      */
-    public function init()
+    public function __construct($config = [])
     {
-        parent::init();
+        parent::__construct($config);
 
-        // Try to get Sentry component from Yii application
-        if (\Yii::$app->has('sentry')) {
-            $this->component = \Yii::$app->get('sentry');
-            $this->initialized = true;
-        } elseif (!empty($this->dsn)) {
-            // Initialize Sentry directly if DSN is provided
-            $this->initSentry();
-            $this->initialized = true;
-        } else {
-            throw new InvalidConfigException('Either "dsn" property must be set or "sentry" component must be configured.');
-        }
-    }
-
-    /**
-     * Initialize Sentry SDK
-     */
-    protected function initSentry()
-    {
-        $options = array_merge([
-            'dsn' => $this->dsn,
-        ], $this->clientOptions);
-
-        \Sentry\init($options);
+        $this->sentry = Instance::ensure($this->sentry, Sentry::class);
     }
 
     /**
@@ -105,10 +64,6 @@ class SentryTarget extends Target
      */
     public function export()
     {
-        if (!$this->initialized) {
-            return;
-        }
-
         foreach ($this->messages as $message) {
             $this->processMessage($message);
         }

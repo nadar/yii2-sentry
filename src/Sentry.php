@@ -15,7 +15,7 @@ use yii\base\InvalidConfigException;
  * ```php
  * 'components' => [
  *     'sentry' => [
- *         'class' => 'Nadar\Sentry\Component',
+ *         'class' => 'Nadar\Sentry\Sentry',
  *         'dsn' => 'your-sentry-dsn',
  *         'environment' => 'production',
  *         'release' => '1.0.0',
@@ -26,52 +26,52 @@ use yii\base\InvalidConfigException;
  * @author Basil Suter <git@nadar.io>
  * @since 1.0.0
  */
-class Component extends BaseComponent
+class Sentry extends BaseComponent
 {
     /**
      * @var string Sentry DSN (Data Source Name)
      */
-    public $dsn;
+    public string $dsn;
 
     /**
      * @var string|null Environment name (e.g., 'production', 'staging', 'development')
      */
-    public $environment;
+    public ?string $environment = null;
 
     /**
      * @var string|null Release version
      */
-    public $release;
+    public ?string $release = null;
 
     /**
      * @var float Sample rate for error events (0.0 to 1.0)
      */
-    public $sampleRate = 1.0;
+    public float $sampleRate = 1.0;
 
     /**
      * @var float Sample rate for performance monitoring (0.0 to 1.0)
      */
-    public $tracesSampleRate = 0.0;
+    public float $tracesSampleRate = 0.0;
 
     /**
      * @var array Additional client options for Sentry SDK
      */
-    public $clientOptions = [];
+    public array $clientOptions = [];
 
     /**
      * @var bool Whether to send default PII (Personally Identifiable Information)
      */
-    public $sendDefaultPii = false;
+    public bool $sendDefaultPii = false;
 
     /**
      * @var int Maximum breadcrumbs
      */
-    public $maxBreadcrumbs = 100;
+    public int $maxBreadcrumbs = 100;
 
     /**
      * @var callable|null Before send callback
      */
-    public $beforeSend;
+    public $beforeSend = null;
 
     /**
      * @inheritdoc

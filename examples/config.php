@@ -9,7 +9,7 @@ return [
     'components' => [
         // Option 1: Configure Sentry component separately
         'sentry' => [
-            'class' => 'Nadar\Sentry\Component',
+            'class' => 'Nadar\Sentry\Sentry',
             'dsn' => 'YOUR_SENTRY_DSN',
             'environment' => getenv('APP_ENV') ?: 'production',
             'release' => '1.0.0',
@@ -45,13 +45,6 @@ return [
                     
                     // Context variables to include in reports
                     'logVars' => ['_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_SERVER'],
-                    
-                    // Additional client options (optional)
-                    'clientOptions' => [
-                        'tags' => [
-                            'application' => 'my-app',
-                        ],
-                    ],
                     
                     // Custom callback to add extra context (optional)
                     'extraCallback' => function ($message, $extra) {
