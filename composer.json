@@ -1,0 +1,49 @@
+{
+    "name": "nadar/yii2-sentry",
+    "description": "Yii2 Sentry integration with log target support",
+    "type": "yii2-extension",
+    "keywords": ["yii2", "sentry", "logging", "error tracking"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Basil Suter",
+            "email": "git@nadar.io"
+        }
+    ],
+    "require": {
+        "php": "^8.4|^8.5",
+        "sentry/sentry": "^4.19"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "yiisoft/yii2": "^2.0"
+    },
+    "config": {
+        "allow-plugins": {
+          "yiisoft/yii2-composer": true,
+          "php-http/discovery": true
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Nadar\\Sentry\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Nadar\\Sentry\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    },
+    "repositories": [
+        {
+          "type": "composer",
+          "url": "https://asset-packagist.org"
+        }
+    ]
+
+}
