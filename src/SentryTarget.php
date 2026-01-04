@@ -52,7 +52,7 @@ class SentryTarget extends Target
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         
@@ -62,7 +62,7 @@ class SentryTarget extends Target
     /**
      * @inheritdoc
      */
-    public function export()
+    public function export(): void
     {
         foreach ($this->messages as $message) {
             $this->processMessage($message);
@@ -74,7 +74,7 @@ class SentryTarget extends Target
      * 
      * @param array $message The log message
      */
-    protected function processMessage($message)
+    protected function processMessage(array $message): void
     {
         list($text, $level, $category, $timestamp, $traces) = $message;
 
@@ -115,7 +115,7 @@ class SentryTarget extends Target
      * @param array $extra Extra context data
      * @param string $category Log category
      */
-    protected function sendToSentry($text, $severity, $extra, $category)
+    protected function sendToSentry(mixed $text, Severity $severity, array $extra, string $category): void
     {
         \Sentry\withScope(function (Scope $scope) use ($text, $severity, $extra, $category) {
             $scope->setContext('extra', $extra);
@@ -141,7 +141,7 @@ class SentryTarget extends Target
      * @param int $level Yii log level
      * @return Severity
      */
-    protected function getSeverity($level)
+    protected function getSeverity(int $level): Severity
     {
         switch ($level) {
             case Logger::LEVEL_ERROR:
@@ -166,7 +166,7 @@ class SentryTarget extends Target
      * 
      * @return array the context information
      */
-    protected function getContextMessage()
+    protected function getContextMessage(): array
     {
         $context = [];
         $allowedVars = ['_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_SERVER'];
@@ -208,7 +208,7 @@ class SentryTarget extends Target
     /**
      * @inheritdoc
      */
-    public function collect($messages, $final)
+    public function collect($messages, $final): void
     {
         $this->messages = array_merge(
             $this->messages,

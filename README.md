@@ -6,7 +6,7 @@ Yii2 Sentry integration with log target support for error tracking and monitorin
 
 - PHP >= 8.4
 - Yii2 >= 2.0
-- Sentry PHP SDK >= 5.0
+- Sentry PHP SDK >= 4.9
 
 ## Installation
 

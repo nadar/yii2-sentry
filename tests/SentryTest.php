@@ -4,25 +4,25 @@ namespace Nadar\Sentry\Tests;
 
 use Nadar\Sentry\Sentry;
 use PHPUnit\Framework\TestCase;
-use Sentry\State\Hub;
+use Sentry\SentrySdk;
+use Sentry\State\HubInterface;
 use yii\base\InvalidConfigException;
 
 class SentryTest extends TestCase
 {
-    private const TEST_DSN = self::TEST_DSN;
+    private const TEST_DSN = 'https://public@sentry.io/1';
     
     protected function tearDown(): void
     {
         parent::tearDown();
         
         // Reset Sentry state between tests
-        $hub = Hub::getCurrent();
-        $hub->bindClient(null);
+        SentrySdk::init();
     }
 
     public function testCanInstantiate(): void
     {
-        $sentry = new Sentry();
+        $sentry = new Sentry(['dsn' => self::TEST_DSN]);
         $this->assertInstanceOf(Sentry::class, $sentry);
     }
 
@@ -37,16 +37,14 @@ class SentryTest extends TestCase
 
     public function testInitSucceedsWithValidDsn(): void
     {
-        $sentry = new Sentry();
-        $sentry->dsn = self::TEST_DSN;
+        $sentry = new Sentry(['dsn' => self::TEST_DSN]);
         
         $this->assertNull($sentry->init());
     }
 
     public function testDefaultPropertyValues(): void
     {
-        $sentry = new Sentry();
-        $sentry->dsn = self::TEST_DSN;
+        $sentry = new Sentry(['dsn' => self::TEST_DSN]);
         
         $this->assertNull($sentry->environment);
         $this->assertNull($sentry->release);
@@ -61,14 +59,15 @@ class SentryTest extends TestCase
 
     public function testCustomPropertyValues(): void
     {
-        $sentry = new Sentry();
-        $sentry->dsn = self::TEST_DSN;
-        $sentry->environment = 'production';
-        $sentry->release = '1.0.0';
-        $sentry->sampleRate = 0.5;
-        $sentry->tracesSampleRate = 0.1;
-        $sentry->sendDefaultPii = true;
-        $sentry->maxBreadcrumbs = 50;
+        $sentry = new Sentry([
+            'dsn' => self::TEST_DSN,
+            'environment' => 'production',
+            'release' => '1.0.0',
+            'sampleRate' => 0.5,
+            'tracesSampleRate' => 0.1,
+            'sendDefaultPii' => true,
+            'maxBreadcrumbs' => 50,
+        ]);
         
         $this->assertEquals('production', $sentry->environment);
         $this->assertEquals('1.0.0', $sentry->release);
@@ -80,18 +79,16 @@ class SentryTest extends TestCase
 
     public function testGetHubReturnsHubInstance(): void
     {
-        $sentry = new Sentry();
-        $sentry->dsn = self::TEST_DSN;
+        $sentry = new Sentry(['dsn' => self::TEST_DSN]);
         $sentry->init();
         
         $hub = $sentry->getHub();
-        $this->assertInstanceOf(Hub::class, $hub);
+        $this->assertInstanceOf(HubInterface::class, $hub);
     }
 
     public function testCaptureExceptionReturnsEventId(): void
     {
-        $sentry = new Sentry();
-        $sentry->dsn = self::TEST_DSN;
+        $sentry = new Sentry(['dsn' => self::TEST_DSN]);
         $sentry->init();
         
         $exception = new \Exception('Test exception');
@@ -103,8 +100,7 @@ class SentryTest extends TestCase
 
     public function testCaptureMessageReturnsEventId(): void
     {
-        $sentry = new Sentry();
-        $sentry->dsn = self::TEST_DSN;
+        $sentry = new Sentry(['dsn' => self::TEST_DSN]);
         $sentry->init();
         
         $eventId = $sentry->captureMessage('Test message', 'error');
@@ -117,12 +113,13 @@ class SentryTest extends TestCase
     {
         $callbackExecuted = false;
         
-        $sentry = new Sentry();
-        $sentry->dsn = self::TEST_DSN;
-        $sentry->beforeSend = function ($event, $hint) use (&$callbackExecuted) {
-            $callbackExecuted = true;
-            return $event;
-        };
+        $sentry = new Sentry([
+            'dsn' => self::TEST_DSN,
+            'beforeSend' => function ($event, $hint) use (&$callbackExecuted) {
+                $callbackExecuted = true;
+                return $event;
+            },
+        ]);
         $sentry->init();
         
         $sentry->captureMessage('Test message');
@@ -134,12 +131,13 @@ class SentryTest extends TestCase
 
     public function testClientOptionsAreMerged(): void
     {
-        $sentry = new Sentry();
-        $sentry->dsn = self::TEST_DSN;
-        $sentry->clientOptions = [
-            'server_name' => 'test-server',
-            'release' => '2.0.0',
-        ];
+        $sentry = new Sentry([
+            'dsn' => self::TEST_DSN,
+            'clientOptions' => [
+                'server_name' => 'test-server',
+                'release' => '2.0.0',
+            ],
+        ]);
         
         $this->assertIsArray($sentry->clientOptions);
         $this->assertArrayHasKey('server_name', $sentry->clientOptions);

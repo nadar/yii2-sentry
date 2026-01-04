@@ -10,6 +10,12 @@
             "email": "git@nadar.io"
         }
     ],
+    
+    "scripts": {
+        "test": [
+            "docker run --rm -it -u \"$(id -u):$(id -g)\" -v \"$PWD:/app\" -w /app php:8.4-cli bash -lc 'set -e; if ! command -v composer >/dev/null 2>&1; then curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; fi; composer install --no-interaction --prefer-dist; ./vendor/bin/phpunit $*' --"
+        ]
+    },
     "require": {
         "php": "^8.4|^8.5",
         "sentry/sentry": "^4.19"
@@ -19,6 +25,9 @@
         "yiisoft/yii2": "^2.0"
     },
     "config": {
+        "platform": {
+            "php" : "8.5"
+        },
         "allow-plugins": {
           "yiisoft/yii2-composer": true,
           "php-http/discovery": true

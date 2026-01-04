@@ -2,7 +2,9 @@
 
 namespace Nadar\Sentry;
 
-use Sentry\State\Hub;
+use Sentry\SentrySdk;
+use Sentry\Severity;
+use Sentry\State\HubInterface;
 use yii\base\Component as BaseComponent;
 use yii\base\InvalidConfigException;
 
@@ -77,7 +79,7 @@ class Sentry extends BaseComponent
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -91,7 +93,7 @@ class Sentry extends BaseComponent
     /**
      * Initialize Sentry SDK
      */
-    protected function initSentry()
+    protected function initSentry(): void
     {
         $options = array_merge([
             'dsn' => $this->dsn,
@@ -119,11 +121,11 @@ class Sentry extends BaseComponent
     /**
      * Get the Sentry Hub instance
      * 
-     * @return Hub
+     * @return HubInterface
      */
-    public function getHub()
+    public function getHub(): HubInterface
     {
-        return Hub::getCurrent();
+        return SentrySdk::getCurrentHub();
     }
 
     /**
@@ -132,20 +134,25 @@ class Sentry extends BaseComponent
      * @param \Throwable $exception
      * @return string|null Event ID
      */
-    public function captureException($exception)
+    public function captureException(\Throwable $exception): ?string
     {
-        return Hub::getCurrent()->captureException($exception);
+        return SentrySdk::getCurrentHub()->captureException($exception);
     }
 
     /**
      * Capture a message
      * 
      * @param string $message
-     * @param string|null $level
+     * @param string|Severity|null $level
      * @return string|null Event ID
      */
-    public function captureMessage($message, $level = null)
+    public function captureMessage(string $message, string|Severity|null $level = null): ?string
     {
-        return Hub::getCurrent()->captureMessage($message, $level);
+        // Convert string level to Severity if needed
+        if (is_string($level)) {
+            $level = new Severity($level);
+        }
+        
+        return SentrySdk::getCurrentHub()->captureMessage($message, $level);
     }
 }
