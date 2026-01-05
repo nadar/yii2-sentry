@@ -95,6 +95,7 @@ class Sentry extends BaseComponent
     protected function initSentry(): void
     {
         $options = array_merge([
+            'default_integrations' => false, // disable default integrations to avoid conflicts, as Yii has its own error handling (https://docs.sentry.io/platforms/php/integrations/#default-integrations)
             'dsn' => $this->dsn,
             'sample_rate' => $this->sampleRate,
             'traces_sample_rate' => $this->tracesSampleRate,
