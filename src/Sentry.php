@@ -111,12 +111,12 @@ class Sentry extends BaseComponent
             if ($this->extraCallback && is_callable($this->extraCallback)) {
                 $extraCallbackData = call_user_func($this->extraCallback);
                 if (is_array($extraCallbackData)) {
-                    $extra = array_merge($extra, $extraCallbackData);
+                    $extra = array_merge($extraCallbackData, $extra);
                 } else {
-                    $extra = array_merge($extra, ['extra_callback_data' => var_export($extraCallbackData, true)]);
+                    $extra = array_merge(['extra_callback_data' => var_export($extraCallbackData, true)], $extra);
                 }
             }
-            $extra = array_merge($extra, $this->getAppExtras());
+            $extra = array_merge($this->getAppExtras(), $extra);
             $event->setExtra($extra);
             $event->setTags(array_merge($event->getTags(), $this->getAppTags()));
 
