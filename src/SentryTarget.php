@@ -175,22 +175,4 @@ class SentryTarget extends Target
         }
         return $context;
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function collect($messages, $final): void
-    {
-        $this->messages = array_merge(
-            $this->messages,
-            $this->filterMessages($messages, $this->getLevels(), $this->categories, $this->except)
-        );
-        
-        $count = count($this->messages);
-        
-        if ($count > 0 && ($final || $this->exportInterval > 0 && $count >= $this->exportInterval)) {
-            $this->export();
-            $this->messages = [];
-        }
-    }
 }
