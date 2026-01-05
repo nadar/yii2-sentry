@@ -2,6 +2,7 @@
 
 namespace Nadar\Sentry;
 
+use Sentry\ClientBuilder;
 use Sentry\Event;
 use Sentry\EventHint;
 use Sentry\SentrySdk;
@@ -13,8 +14,10 @@ use Yii;
 use yii\base\Component as BaseComponent;
 use yii\base\InvalidConfigException;
 use yii\web\Application;
-
-use function Sentry\init;
+use Sentry\Integration\IntegrationInterface;
+use Sentry\Integration\ErrorListenerIntegration;
+use Sentry\Integration\ExceptionListenerIntegration;
+use Sentry\Integration\FatalErrorListenerIntegration;
 
 /**
  * Sentry Component for Yii2
@@ -95,7 +98,6 @@ class Sentry extends BaseComponent
     protected function initSentry(): void
     {
         $options = array_merge([
-            'default_integrations' => false, // disable default integrations to avoid conflicts, as Yii has its own error handling (https://docs.sentry.io/platforms/php/integrations/#default-integrations)
             'dsn' => $this->dsn,
             'sample_rate' => $this->sampleRate,
             'traces_sample_rate' => $this->tracesSampleRate,
@@ -116,7 +118,7 @@ class Sentry extends BaseComponent
                     $extra = array_merge(['extra_callback_data' => var_export($extraCallbackData, true)], $extra);
                 }
             }
-            $extra = array_merge($this->getAppExtras(), $extra);
+            $extra = array_merge($extra, $this->getAppExtras());
             $event->setExtra($extra);
             $event->setTags(array_merge($event->getTags(), $this->getAppTags()));
 
@@ -132,7 +134,25 @@ class Sentry extends BaseComponent
             return $event;
         };
 
-        init($options);
+        $builder = ClientBuilder::create($options);
+
+        $builder->getOptions()->setIntegrations(static function (array $integrations) {
+            // Remove the default error and fatal exception listeners to let us handle those
+            return array_filter($integrations, static function (IntegrationInterface $integration): bool {
+                if ($integration instanceof ErrorListenerIntegration) {
+                    return false;
+                }
+                if ($integration instanceof ExceptionListenerIntegration) {
+                    return false;
+                }
+                if ($integration instanceof FatalErrorListenerIntegration) {
+                    return false;
+                }
+
+                return true;
+            });
+        });
+        SentrySdk::init()->bindClient($builder->getClient());
     }
 
     public function getAppTags() : array
