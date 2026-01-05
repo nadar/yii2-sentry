@@ -80,8 +80,6 @@ class SentryTestCommand extends Controller
      */
     public function actionContext(): int
     {
-        $this->stdout("→ Testing exception with custom context...\n", \yii\helpers\Console::FG_CYAN);
-        
         // Configure scope with custom context
         $hub = $this->sentry->getHub();
         $hub->configureScope(function (\Sentry\State\Scope $scope): void {
@@ -135,10 +133,6 @@ class SentryTestCommand extends Controller
         } catch (\Exception $e) {
             $eventId = $this->sentry->captureException($e);
             $this->stdout("  ✓ Exception with context captured (Event ID: {$eventId})\n", \yii\helpers\Console::FG_GREEN);
-            $this->stdout("  ✓ User data: test-user-123\n", \yii\helpers\Console::FG_GREEN);
-            $this->stdout("  ✓ Tags: test_type, command, environment_test\n", \yii\helpers\Console::FG_GREEN);
-            $this->stdout("  ✓ Custom context: test_info\n", \yii\helpers\Console::FG_GREEN);
-            $this->stdout("  ✓ Breadcrumbs: 2 items\n", \yii\helpers\Console::FG_GREEN);
         }
         
         return ExitCode::OK;
