@@ -118,7 +118,6 @@ class Sentry extends BaseComponent
                     $extra = array_merge(['extra_callback_data' => var_export($extraCallbackData, true)], $extra);
                 }
             }
-            $extra = array_merge($extra, $this->getAppExtras());
             $event->setExtra($extra);
             $event->setTags(array_merge($event->getTags(), $this->getAppTags()));
 
@@ -159,23 +158,9 @@ class Sentry extends BaseComponent
     {
         return array_filter([
             'yii.version' => Yii::getVersion(),
+            'yii.requested_route' => Yii::$app?->requestedRoute ?? null,
+            'yii.requested_params' => Yii::$app?->requestedParams ?? null,
         ]);
-    }
-
-    public function getAppExtras() : array
-    {
-        return [
-            'app' => array_filter([
-                'name' => Yii::$app->name ?? null,
-                'id' => Yii::$app->id ?? null,
-            ]),
-            'routing' => array_filter([
-                'controller' => Yii::$app?->controller?->id ?? null,
-                'action' => Yii::$app?->controller?->action?->id ?? null,
-                'requested_route' => Yii::$app?->requestedRoute ?? null,
-                'requested_params' => Yii::$app?->requestedParams ?? null,
-            ])
-        ];
     }
 
     public function getAppUserDataBag() : UserDataBag|false
