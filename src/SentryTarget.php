@@ -68,9 +68,6 @@ class SentryTarget extends Target
     {
         list($text, $level, $category, $timestamp, $traces) = $message;
 
-        // Convert Yii log level to Sentry severity
-        $severity = $this->getSeverity($level);
-
         $severity = match($level) {
             Logger::LEVEL_ERROR => Severity::error(),
             Logger::LEVEL_WARNING => Severity::warning(),
