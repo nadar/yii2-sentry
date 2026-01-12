@@ -123,23 +123,6 @@ class SentryTargetTest extends TestCase
         $this->assertInstanceOf(Sentry::class, $target->sentry);
     }
 
-    public function testGetSeverityConvertsYiiLevelsToSentryLevels(): void
-    {
-        $target = new SentryTarget();
-        $target->init();
-        
-        $class = new ReflectionClass(SentryTarget::class);
-        $method = $class->getMethod('getSeverity');
-        $method->setAccessible(true);
-        
-        $this->assertEquals(Severity::error(), $method->invoke($target, Logger::LEVEL_ERROR));
-        $this->assertEquals(Severity::warning(), $method->invoke($target, Logger::LEVEL_WARNING));
-        $this->assertEquals(Severity::info(), $method->invoke($target, Logger::LEVEL_INFO));
-        $this->assertEquals(Severity::debug(), $method->invoke($target, Logger::LEVEL_TRACE));
-        $this->assertEquals(Severity::debug(), $method->invoke($target, Logger::LEVEL_PROFILE));
-        $this->assertEquals(Severity::info(), $method->invoke($target, 999)); // Unknown level
-    }
-
     /**
      * Returns configured SentryTarget object
      */

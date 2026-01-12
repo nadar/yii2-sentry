@@ -71,9 +71,23 @@ class SentryTarget extends Target
         // Convert Yii log level to Sentry severity
         $severity = $this->getSeverity($level);
 
+        $severity = match($level) {
+            Logger::LEVEL_ERROR => Severity::error(),
+            Logger::LEVEL_WARNING => Severity::warning(),
+            Logger::LEVEL_INFO => Severity::info(),
+            Logger::LEVEL_TRACE => Severity::debug(),
+            Logger::LEVEL_PROFILE, Logger::LEVEL_PROFILE_BEGIN, Logger::LEVEL_PROFILE_END => false,
+            default => false,
+        };
+
+        if ($severity === false) {
+            // Skip profiling logs
+            return;
+        }
+
+
         // Prepare context data
-        $extra = [
-        ];
+        $extra = [];
 
         if (is_array($text)) {
             // if array has message or msg key extract that and put the rest in extra (but with
@@ -129,31 +143,6 @@ class SentryTarget extends Target
                 \Sentry\captureMessage((string) $text, $severity);
             }
         });
-    }
-
-    /**
-     * Convert Yii log level to Sentry severity
-     * 
-     * @param int $level Yii log level
-     * @return Severity
-     */
-    protected function getSeverity(int $level): Severity
-    {
-        switch ($level) {
-            case Logger::LEVEL_ERROR:
-                return Severity::error();
-            case Logger::LEVEL_WARNING:
-                return Severity::warning();
-            case Logger::LEVEL_INFO:
-                return Severity::info();
-            case Logger::LEVEL_TRACE:
-            case Logger::LEVEL_PROFILE:
-            case Logger::LEVEL_PROFILE_BEGIN:
-            case Logger::LEVEL_PROFILE_END:
-                return Severity::debug();
-            default:
-                return Severity::info();
-        }
     }
 
     /**
