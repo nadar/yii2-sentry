@@ -156,10 +156,16 @@ class Sentry extends BaseComponent
 
     public function getAppTags() : array
     {
+        $requestParams = Yii::$app?->requestedParams ?? null;
+
+        if (!is_scalar($requestParams)) {
+            $requestParams = var_export($requestParams, true);
+        }
+        
         return array_filter([
             'yii.version' => Yii::getVersion(),
             'yii.requested_route' => Yii::$app?->requestedRoute ?? null,
-            'yii.requested_params' => Yii::$app?->requestedParams ?? null,
+            'yii.requested_params' => $requestParams,
         ]);
     }
 
