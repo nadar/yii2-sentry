@@ -158,14 +158,16 @@ class Sentry extends BaseComponent
     {
         $requestParams = Yii::$app?->requestedParams ?? null;
 
+        // for example cli requests can have non scalar params,
+        // params can noew have \n etc which breaks Sentry UI
         if (!is_scalar($requestParams)) {
-            $requestParams = var_export($requestParams, true);
+            $requestParams = null;
         }
         
         return array_filter([
             'yii.version' => Yii::getVersion(),
             'yii.requested_route' => Yii::$app?->requestedRoute ?? null,
-            'yii.requested_params' => $requestParams,
+            'yii.requested_params' => null,
         ]);
     }
 
