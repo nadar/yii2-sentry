@@ -60,6 +60,15 @@ class SentryTarget extends Target
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function getContextMessage()
+    {
+        // this mandatory override to avoid context message being appended to log
+        return '';
+    }
+
+    /**
      * Process a single log message
      * 
      * @param array $message The log message
