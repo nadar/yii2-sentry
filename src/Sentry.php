@@ -71,6 +71,23 @@ class Sentry extends BaseComponent
     public int $maxBreadcrumbs = 100;
 
     /**
+     * @var int Maximum number of seconds to wait while trying to connect to the Sentry ingest
+     * endpoint. Kept low on purpose: a slow or unreachable endpoint must never block the request
+     * (and exhaust the php-fpm pool). Override via config if you really need a higher value.
+     * `2` is the Sentry SDK default.
+     * @see https://docs.sentry.io/platforms/php/configuration/options/#http_connect_timeout
+     */
+    public int $httpConnectTimeout = 2;
+
+    /**
+     * @var int Maximum execution time, in seconds, for the request+response as a whole. Includes
+     * the connect phase, so it should be greater than {@see $httpConnectTimeout}. `5` is the Sentry
+     * SDK default.
+     * @see https://docs.sentry.io/platforms/php/configuration/options/#http_timeout
+     */
+    public int $httpTimeout = 5;
+
+    /**
      * @var callable|null Callback function to add extra data to the event
      * The callback signature: function() { return ['extra1' => 'value1']; }
      * This will be applied globally to all events sent through this component.
@@ -105,6 +122,9 @@ class Sentry extends BaseComponent
             'max_breadcrumbs' => $this->maxBreadcrumbs,
             'environment' => YII_ENV,
             'release' => Yii::$app->version ?? null,
+            // Hard caps so an unreachable/slow ingest endpoint can never stall the request.
+            'http_connect_timeout' => $this->httpConnectTimeout,
+            'http_timeout' => $this->httpTimeout,
         ], $this->clientOptions);
 
         $options['before_send'] = function (Event $event): ?Event {
@@ -167,7 +187,7 @@ class Sentry extends BaseComponent
         return array_filter([
             'yii.version' => Yii::getVersion(),
             'yii.requested_route' => Yii::$app?->requestedRoute ?? null,
-            'yii.requested_params' => null,
+            'yii.requested_params' => $requestParams,
         ]);
     }
 

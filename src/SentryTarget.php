@@ -55,7 +55,14 @@ class SentryTarget extends Target
     public function export(): void
     {
         foreach ($this->messages as $message) {
-            $this->processMessage($message);
+            // A failing Sentry transport must never break the actual request, nor prevent the
+            // remaining messages from being processed. Yii catches throwables from export() as a
+            // whole, but that would drop every message after the first failure.
+            try {
+                $this->processMessage($message);
+            } catch (\Throwable $e) {
+                error_log('SentryTarget: failed to export log message: ' . $e->getMessage());
+            }
         }
     }
 
